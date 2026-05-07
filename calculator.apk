@@ -1,0 +1,146 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
+
+export default function App() {
+  const [displayValue, setDisplayValue] = useState('0');
+  const [operator, setOperator] = useState(null);
+  const [firstValue, setFirstValue] = useState('');
+  const [nextValue, setNextValue] = useState(false);
+
+  const handleTap = (type, value) => {
+    if (type === 'number') {
+      if (displayValue === '0' || nextValue) {
+        setDisplayValue(value);
+        setNextValue(false);
+      } else {
+        setDisplayValue(`${displayValue}${value}`);
+      }
+    }
+
+    if (type === 'operator') {
+      setOperator(value);
+      setFirstValue(displayValue);
+      setNextValue(true);
+    }
+
+    if (type === 'clear') {
+      setDisplayValue('0');
+      setFirstValue('');
+      setOperator(null);
+      setNextValue(false);
+    }
+
+    if (type === 'posneg') {
+      setDisplayValue(`${parseFloat(displayValue) * -1}`);
+    }
+
+    if (type === 'percentage') {
+      setDisplayValue(`${parseFloat(displayValue) * 0.01}`);
+    }
+
+    if (type === 'equal') {
+      const current = parseFloat(displayValue);
+      const previous = parseFloat(firstValue);
+
+      if (operator === '+') setDisplayValue(`${previous + current}`);
+      if (operator === '-') setDisplayValue(`${previous - current}`);
+      if (operator === 'x') setDisplayValue(`${previous * current}`);
+      if (operator === '/') setDisplayValue(`${previous / current}`);
+
+      setFirstValue('');
+      setOperator(null);
+      setNextValue(false);
+    }
+  };
+
+  const Row = ({ children }) => <View style={styles.row}>{children}</View>;
+
+  const Button = ({ text, onPress, theme, size }) => {
+    const buttonStyles = [styles.button];
+    const textStyles = [styles.buttonText];
+
+    if (theme === 'secondary') {
+      buttonStyles.push(styles.buttonSecondary);
+      textStyles.push(styles.buttonTextSecondary);
+    } else if (theme === 'accent') {
+      buttonStyles.push(styles.buttonAccent);
+    }
+
+    if (size === 'double') {
+      buttonStyles.push(styles.buttonDouble);
+    }
+
+    return (
+      <TouchableOpacity onPress={onPress} style={buttonStyles}>
+        <Text style={textStyles}>{text}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.displayArea}>
+          <Text style={styles.value}>
+            {parseFloat(displayValue).toLocaleString()}
+          </Text>
+        </View>
+
+        <View style={styles.buttonArea}>
+          <Row>
+            <Button text="C" theme="secondary" onPress={() => handleTap('clear')} />
+            <Button text="+/-" theme="secondary" onPress={() => handleTap('posneg')} />
+            <Button text="%" theme="secondary" onPress={() => handleTap('percentage')} />
+            <Button text="/" theme="accent" onPress={() => handleTap('operator', '/')} />
+          </Row>
+          <Row>
+            <Button text="7" onPress={() => handleTap('number', '7')} />
+            <Button text="8" onPress={() => handleTap('number', '8')} />
+            <Button text="9" onPress={() => handleTap('number', '9')} />
+            <Button text="x" theme="accent" onPress={() => handleTap('operator', 'x')} />
+          </Row>
+          <Row>
+            <Button text="4" onPress={() => handleTap('number', '4')} />
+            <Button text="5" onPress={() => handleTap('number', '5')} />
+            <Button text="6" onPress={() => handleTap('number', '6')} />
+            <Button text="-" theme="accent" onPress={() => handleTap('operator', '-')} />
+          </Row>
+          <Row>
+            <Button text="1" onPress={() => handleTap('number', '1')} />
+            <Button text="2" onPress={() => handleTap('number', '2')} />
+            <Button text="3" onPress={() => handleTap('number', '3')} />
+            <Button text="+" theme="accent" onPress={() => handleTap('operator', '+')} />
+          </Row>
+          <Row>
+            <Button text="0" size="double" onPress={() => handleTap('number', '0')} />
+            <Button text="." onPress={() => handleTap('number', '.')} />
+            <Button text="=" theme="accent" onPress={() => handleTap('equal')} />
+          </Row>
+        </View>
+      </SafeAreaView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#202020' },
+  displayArea: { flex: 1, justifyContent: 'flex-end', padding: 20 },
+  value: { color: '#fff', fontSize: 70, textAlign: 'right' },
+  buttonArea: { paddingBottom: 20 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10, paddingHorizontal: 10 },
+  button: {
+    backgroundColor: '#333333',
+    flex: 1,
+    height: 85,
+    borderRadius: 45,
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 5,
+  },
+  buttonDouble: { flex: 2.1, alignItems: 'flex-start', paddingLeft: 35 },
+  buttonSecondary: { backgroundColor: '#a6a6a6' },
+  buttonAccent: { backgroundColor: '#f09a36' },
+  buttonText: { color: '#fff', fontSize: 30 },
+  buttonTextSecondary: { color: '#060606' },
+});
